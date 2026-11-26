@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ lesson.title }} - {{ course.title }} | Kdemia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        kdemia: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#006837',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            darkbg: '#0B0F17',
+                            darkcard: '#111827',
+                            darkborder: '#1F2937'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @keyframes floatTuzy {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-tuzy-float {
+            animation: floatTuzy 3.5s ease-in-out infinite;
+        }
+
+        /* =========================================================================
+           CORRECCIÓN MAESTRA ABSOLUTA PARA TODAS LAS LECCIONES Y CONTENIDOS (DARK)
+           ========================================================================= */
+
+        /* 1. NEUTRALIZAR CUALQUIER FONDO BLANCO O CLARO DE EDITOR */
+        .dark .content-body .bg-white,
+        .dark .content-body [class*="bg-slate-50"],
+        .dark .content-body [class*="bg-gray-50"],
+        .dark .content-body [class*="bg-slate-100"],
+        .dark .content-body [class*="bg-zinc-50"],
+        .dark .content-body div {
+            background-color: transparent;
+        }
+
+        .dark .content-body .bg-white,
+        .dark .content-body article .bg-white,
+        .dark .content-body div[class*="rounded-"],
+        .dark .content-body section {
+            background-color: #111827 !important;
+            border-color: #1F2937 !important;
+        }
+
+        /* 2. CORRECCIÓN DE TEXTOS OSCUROS INVISIBLES EN MODO OSCURO */
+        .dark .content-body,
+        .dark .content-body p,
+        .dark .content-body span,
+        .dark .content-body li,
+        .dark .content-body td,
+        .dark .content-body th {
+            color: #CBD5E1 !important;
+        }
+
+        .dark .content-body [class*="text-slate-600"],
+        .dark .content-body [class*="text-slate-500"],
+        .dark .content-body [class*="text-gray-600"],
+        .dark .content-body [class*="text-gray-500"],
+        .dark .content-body [class*="text-zinc-600"] {
+            color: #94A3B8 !important;
+        }
+
+        .dark .content-body [class*="text-slate-900"],
+        .dark .content-body [class*="text-slate-800"],
+        .dark .content-body [class*="text-gray-900"],
+        .dark .content-body [class*="text-gray-800"],
+        .dark .content-body [class*="text-black"] {
+            color: #FFFFFF !important;
+        }
+
+        .dark .content-body strong, 
+        .dark .content-body b,
+        .dark .content-body h1,
+        .dark .content-body h2,
+        .dark .content-body h3,
+        .dark .content-body h4,
+        .dark .content-body h5,
+        .dark .content-body h6 {
+            color: #FFFFFF !important;
+        }
+
+        /* 3. SUB-TARJETAS INTERNAS (Pasos, Pasatiempos, Resultados Esperados) */
+        .dark .content-body .grid div,
+        .dark .content-body div[class*="rounded-xl"],
+        .dark .content-body div[class*="rounded-2xl"],
+        .dark .content-body div[class*="rounded-3xl"] {
+            background-color: #151F32 !important;
+            border-color: #26354D !important;
+        }
+
+        .dark .content-body .grid div p,
+        .dark .content-body .grid div span {
+            color: #94A3B8 !important;
+        }
+
+        .dark .content-body .grid div strong {
+            color: #38BDF8 !important;
+        }
+
+        /* 4. TABLAS Y COMPONENTES TABULARES */
+        .dark .content-body table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            background-color: #111827 !important;
+            border-radius: 1rem !important;
+            overflow: hidden !important;
+        }
+        .dark .content-body th, 
+        .dark .content-body td {
+            border: 1px solid #1F2937 !important;
+            padding: 0.75rem 1rem !important;
+            color: #E2E8F0 !important;
+            background-color: transparent !important;
+        }
+        .dark .content-body tr:nth-child(even) {
+            background-color: #151F32 !important;
+        }
+
+        /* 5. TARJETAS DE CADA PREGUNTA DEL EXAMEN */
+        .dark .content-body .space-y-6 > div {
+            background-color: #151F32 !important;
+            border-color: #26354D !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .dark .content-body .space-y-6 > div > p {
+            color: #FFFFFF !important;
+            font-weight: 700 !important;
+        }
+
+        /* 6. BOTONES DE OPCIONES DEL EXAMEN */
+        .dark .content-body button {
+            background-color: #0C1322 !important;
+            border-color: #26354D !important;
+            color: #F1F5F9 !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease !important;
+        }
+        .dark .content-body button:hover {
+            background-color: #1E2D47 !important;
+            border-color: #10B981 !important;
+            color: #34D399 !important;
+            transform: translateX(4px);
+        }
+
+        .dark .content-body button.bg-emerald-500\/20,
+        .dark .content-body button[class*="border-kdemia"],
+        .dark .content-body button[class*="border-emerald"] {
+            background-color: rgba(16, 185, 129, 0.25) !important;
+            border-color: #10B981 !important;
+            color: #6EE7B7 !important;
+        }
+
+        /* 7. BOTÓN "TERMINAR Y CALIFICAR EXAMEN" */
+        .dark .content-body div[class*="border-t"],
+        .content-body div:has(#btnSubmitExam) {
+            background-color: transparent !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: none !important;
+            padding-top: 2rem !important;
+            padding-bottom: 1.5rem !important;
+        }
+
+        #btnSubmitExam {
+            background: linear-gradient(135deg, #059669 0%, #006837 100%) !important;
+            border: 1px solid #10B981 !important;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.35) !important;
+            color: #FFFFFF !important;
+            padding: 0.85rem 2.5rem !important;
+            border-radius: 1rem !important;
+            font-size: 0.95rem !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.02em !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 auto !important;
+            transition: all 0.25s ease !important;
+        }
+        #btnSubmitExam:hover {
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.5) !important;
+        }
+
+        /* 8. ENCABEZADOS DE EXAMEN Y ALERTAS */
+        .dark .content-body [class*="bg-slate-50"] {
+            background-color: #121A2B !important;
+            border-color: #24334C !important;
+        }
+        .dark .content-body [class*="bg-slate-50"] h3 {
+            color: #FFFFFF !important;
+        }
+        .dark .content-body [class*="bg-slate-50"] p {
+            color: #94A3B8 !important;
+        }
+        .dark .content-body [class*="bg-emerald-100"] {
+            background-color: rgba(16, 185, 129, 0.2) !important;
+            color: #34D399 !important;
+            border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        }
+
+        /* 9. CAJAS DE COLORES ESPECIALES */
+        .dark .content-body [class*="bg-rose-"],
+        .dark .content-body [class*="bg-red-"] {
+            background-color: rgba(244, 63, 94, 0.12) !important;
+            border-color: rgba(244, 63, 94, 0.35) !important;
+        }
+        .dark .content-body [class*="bg-rose-"] strong,
+        .dark .content-body [class*="bg-rose-"] h4,
+        .dark .content-body [class*="bg-rose-"] [class*="text-rose-"] {
+            color: #FDA4AF !important;
+        }
+        .dark .content-body [class*="bg-rose-"] p,
+        .dark .content-body [class*="bg-rose-"] span {
+            color: #FFE4E6 !important;
+        }
+
+        .dark .content-body [class*="bg-emerald-"],
+        .dark .content-body [class*="bg-green-"] {
+            background-color: rgba(16, 185, 129, 0.12) !important;
+            border-color: rgba(16, 185, 129, 0.35) !important;
+        }
+        .dark .content-body [class*="bg-emerald-"] strong,
+        .dark .content-body [class*="bg-emerald-"] h4,
+        .dark .content-body [class*="bg-emerald-"] [class*="text-emerald-"] {
+            color: #6EE7B7 !important;
+        }
+        .dark .content-body [class*="bg-emerald-"] p,
+        .dark .content-body [class*="bg-emerald-"] span {
+            color: #D1FAE5 !important;
+        }
+
+        .dark .content-body [class*="bg-sky-"],
+        .dark .content-body [class*="bg-blue-"],
+        .dark .content-body [class*="bg-indigo-"] {
+            background-color: rgba(14, 165, 233, 0.12) !important;
+            border-color: rgba(14, 165, 233, 0.35) !important;
+        }
+        .dark .content-body [class*="bg-sky-"] strong,
+        .dark .content-body [class*="bg-sky-"] h4,
+        .dark .content-body [class*="bg-sky-"] [class*="text-sky-"] {
+            color: #7DD3FC !important;
+        }
+        .dark .content-body [class*="bg-sky-"] p,
+        .dark .content-body [class*="bg-sky-"] span {
+            color: #E0F2FE !important;
+        }
+
+        .dark .content-body [class*="bg-amber-"],
+        .dark .content-body [class*="bg-yellow-"] {
+            background-color: rgba(245, 158, 11, 0.12) !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        .dark .content-body [class*="bg-amber-"] strong,
+        .dark .content-body [class*="bg-amber-"] h4,
+        .dark .content-body [class*="bg-amber-"] [class*="text-amber-"] {
+            color: #FCD34D !important;
+        }
+        .dark .content-body [class*="bg-amber-"] p,
+        .dark .content-body [class*="bg-amber-"] span {
+            color: #FEF3C7 !important;
+        }
+
+        .dark .content-body kbd {
+            background-color: #0F172A !important;
+            border-color: #334155 !important;
+            color: #38BDF8 !important;
+        }
+        .dark .content-body h1,
+        .dark .content-body h2,
+        .dark .content-body h3,
+        .dark .content-body h4 {
+            color: #FFFFFF !important;
+        }
+    </style>
+    <script>
+        if (localStorage.getItem('kdemia_theme') === 'dark' || (!('kdemia_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="bg-[#F8FAF9] dark:bg-kdemia-darkbg text-slate-800 dark:text-slate-100 min-h-screen flex flex-col relative transition-colors duration-300">
+
+    <header class="bg-white/80 dark:bg-kdemia-darkcard/80 backdrop-blur-md border-b border-gray-200/80 dark:border-kdemia-darkborder sticky top-0 z-40 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'course_detail' course.slug %}" class="w-10 h-10 rounded-xl bg-kdemia-700 flex items-center justify-center text-white font-black text-lg shadow-md hover:scale-105 transition-transform">
+                    K
+                </a>
+                <span class="font-bold text-slate-900 dark:text-white text-sm sm:text-base line-clamp-1">
+                    {{ course.title }}
+                </span>
+            </div>
+            
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all" title="Alternar tema claro/oscuro">
+                    <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                </button>
+
+                <a href="{% url 'course_detail' course.slug %}" class="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-kdemia-700 dark:hover:text-kdemia-400 flex items-center transition-colors">
+                    &larr; <span class="hidden sm:inline ml-1">Volver al temario</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 flex-1">
+        
+        <div class="mb-6 flex items-center justify-between flex-wrap gap-2">
+            <div>
+                <span class="text-xs font-black uppercase tracking-wider text-kdemia-700 dark:text-kdemia-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full">
+                    {{ lesson.module.title }}
+                </span>
+                <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-3 tracking-tight">
+                    {{ lesson.title }}
+                </h1>
+            </div>
+            {% if is_completed %}
+            <span class="px-3.5 py-1.5 rounded-full text-xs font-black bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 flex items-center">
+                ✓ Completada
+            </span>
+            {% endif %}
+        </div>
+
+        {% if lesson.video_file or lesson.video_url %}
+        <div class="mb-8 rounded-3xl overflow-hidden bg-slate-950 shadow-2xl border border-gray-200 dark:border-slate-800">
+            {% if lesson.video_file %}
+                <video controls class="w-full max-h-[480px] object-cover">
+                    <source src="{{ lesson.video_file.url }}" type="video/mp4">
+                    Tu navegador no soporta el formato de video.
+                </video>
+            {% elif lesson.video_url %}
+                <div class="aspect-video w-full">
+                    <iframe src="{{ lesson.video_url }}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <article class="content-body bg-white dark:bg-kdemia-darkcard rounded-3xl p-6 sm:p-10 border border-gray-200/80 dark:border-kdemia-darkborder shadow-sm mb-8 transition-colors">
+            <div class="leading-relaxed text-sm sm:text-base space-y-4">
+                {{ lesson.content|safe }}
+            </div>
+
+            {% if lesson.practical_example %}
+            <div class="mt-8 p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                <h3 class="font-extrabold text-kdemia-700 dark:text-kdemia-400 text-sm sm:text-base flex items-center mb-2">
+                    <svg class="w-5 h-5 mr-2 text-kdemia-600 dark:text-kdemia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Caso Práctico
+                </h3>
+                <div class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {{ lesson.practical_example|safe }}
+                </div>
+            </div>
+            {% endif %}
+        </article>
+
+        <div class="flex items-center justify-between pt-4 pb-12 border-t border-gray-200 dark:border-slate-800 flex-wrap gap-4">
+            {% if prev_lesson %}
+            <a href="{% url 'lesson_detail' course.slug prev_lesson.id %}" class="inline-flex items-center text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-kdemia-700 dark:hover:text-white bg-white dark:bg-kdemia-darkcard px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm transition-all hover:scale-105 active:scale-95">
+                &larr; Lección anterior
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                <div id="continueActionContainer">
+                    <a id="btnCompleteAndNext" href="{% url 'toggle_completed' course.slug lesson.id %}" class="inline-flex items-center text-xs sm:text-sm font-extrabold text-white bg-kdemia-700 hover:bg-emerald-800 px-6 py-3 rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 {% if is_quiz and not is_completed %}hidden{% endif %}">
+                        {% if next_lesson %}Completar y continuar &rarr;{% else %}Finalizar Curso ✓{% endif %}
+                    </a>
+                    
+                    {% if is_quiz and not is_completed %}
+                    <span id="quizLockedNotice" class="text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-500/10 border border-amber-500/30 px-4 py-2.5 rounded-2xl flex items-center">
+                        🔒 Responde y califica el examen para continuar
+                    </span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="inline-flex items-center text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-kdemia-700 bg-slate-100 dark:bg-slate-800 px-5 py-2.5 rounded-xl transition-all">
+                    Inicia sesión para guardar tu avance &rarr;
+                </a>
+            {% endif %}
+        </div>
+
+    </main>
+
+    <!-- WIDGET DE TUZY -->
+    <div class="fixed bottom-0 right-3 sm:right-6 z-50 flex items-end pointer-events-none select-none">
+        
+        <div id="tuzyChatBox" class="pointer-events-auto mr-3 mb-3 w-[calc(100vw-1.5rem)] sm:w-[380px] md:w-[410px] bg-white dark:bg-kdemia-darkcard rounded-3xl shadow-2xl border border-gray-200 dark:border-kdemia-darkborder flex flex-col overflow-hidden hidden transition-all duration-300 animate-in fade-in zoom-in-95" style="height: 520px; max-height: 75vh;">
+            
+            <div class="bg-gradient-to-r from-kdemia-700 to-emerald-800 p-3.5 flex items-center justify-between text-white relative shadow-md">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 p-1 flex items-center justify-center">
+                        <img src="/media/chibi/chibi_idle.png" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm tracking-tight flex items-center">
+                            Tuzy
+                            <span class="ml-2 text-[10px] bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full font-black uppercase">
+                                {% if is_quiz %}Supervisora IA{% else %}Tutora Kdemia{% endif %}
+                            </span>
+                        </h3>
+                        <p id="tuzyStatusText" class="text-[11px] text-emerald-100">
+                            {% if is_quiz %}¡Modo examen activo! 🐾{% else %}En línea para ayudarte ✨{% endif %}
+                        </p>
+                    </div>
+                </div>
+                <button onclick="toggleTuzyChat()" class="text-white/80 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="tuzyMessages" class="flex-1 p-4 overflow-y-auto space-y-3.5 text-xs sm:text-sm bg-slate-50/70 dark:bg-slate-900/50">
+                <div class="flex items-start space-x-2.5">
+                    <img src="/media/chibi/chibi_talk.png" class="w-8 h-8 rounded-full object-contain bg-emerald-100 dark:bg-emerald-950 p-0.5 flex-shrink-0 shadow-sm">
+                    <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 leading-relaxed text-xs sm:text-sm">
+                        {% if is_quiz %}
+                            ¡Llegó la hora de la verdad! ✨ Es momento de poner a prueba lo aprendido en este módulo. ¡Esfuérzate mucho y concéntrate, confío plenamente en que lo harás increíble! 🐾
+                        {% else %}
+                            ¡Hola! Soy <strong>Tuzy</strong> ✨. Estoy aquí para acompañarte en tu clase de <em>{{ lesson.title }}</em> del curso <strong>{{ course.title }}</strong>. Si no entiendes algún concepto o paso, ¡escríbeme y lo resolvemos juntos! 🐾
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-white dark:bg-kdemia-darkcard border-t border-gray-100 dark:border-slate-800 shadow-inner">
+                <form id="tuzyForm" autocomplete="off" onsubmit="sendToTuzy(event)" class="flex items-center space-x-2">
+                    <input type="text" id="tuzyInput" 
+                           autocomplete="off" 
+                           autocorrect="off" 
+                           autocapitalize="off" 
+                           spellcheck="false" 
+                           placeholder="{% if is_quiz %}¡Concéntrate en tus respuestas!{% else %}Escríbele tu duda a Tuzy...{% endif %}" 
+                           required 
+                           class="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-kdemia-700 focus:ring-2 focus:ring-kdemia-500/20 transition-all">
+                    <button type="submit" id="tuzySendBtn" class="bg-kdemia-700 hover:bg-emerald-800 text-white p-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <div class="pointer-events-auto flex flex-col items-center cursor-pointer group mb-1" onclick="toggleTuzyChat()">
+            <div id="tuzySpeechBubble" class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-2 border-emerald-500/30 shadow-xl px-3 py-1.5 rounded-2xl mb-1 text-[11px] sm:text-xs font-extrabold text-kdemia-700 dark:text-kdemia-400 group-hover:scale-105 transition-all text-center relative max-w-[170px]">
+                {% if is_quiz %}¡Tú puedes con el examen! 🐾{% else %}¡Aquí estoy lista! 🐾{% endif %}
+                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-x-6 border-x-transparent border-t-6 border-t-white dark:border-t-slate-800"></div>
+            </div>
+
+            <div class="relative w-36 h-52 sm:w-40 sm:h-56 md:w-48 md:h-64 animate-tuzy-float transition-transform duration-300 group-hover:scale-105">
+                <div class="absolute inset-0 bg-emerald-400/20 rounded-full blur-xl group-hover:bg-emerald-400/35 transition-all"></div>
+                <img id="tuzyStandingMascot" src="/media/chibi/chibi_idle.png" alt="Tuzy la Tuza" class="w-full h-full object-contain drop-shadow-xl">
+                <span class="absolute bottom-4 right-4 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-md"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        const lessonId = {{ lesson.id }};
+        const isQuiz = {{ is_quiz|yesno:"true,false" }};
+        let isChatOpen = false;
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('kdemia_theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('kdemia_theme', 'dark');
+            }
+        }
+
+        const quizAnswers = {};
+
+        function selectQuizOption(btn, qNum, isCorrect, feedback) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('button').forEach(b => {
+                b.classList.remove('bg-emerald-500/20', 'border-emerald-500', 'text-emerald-400', 'font-bold', 'ring-2', 'ring-emerald-500/30');
+            });
+
+            btn.classList.add('bg-emerald-500/20', 'border-emerald-500', 'text-emerald-400', 'font-bold', 'ring-2', 'ring-emerald-500/30');
+
+            quizAnswers[qNum] = {
+                btn: btn,
+                isCorrect: isCorrect,
+                feedback: feedback
+            };
+
+            const errBox = document.getElementById('quizValidationWarning');
+            if (errBox) errBox.classList.add('hidden');
+        }
+
+        function submitExam(totalQuestions) {
+            const answeredCount = Object.keys(quizAnswers).length;
+            const warningBox = document.getElementById('quizValidationWarning');
+
+            if (answeredCount < totalQuestions) {
+                if (warningBox) {
+                    warningBox.innerText = `⚠️ Has respondido ${answeredCount} de ${totalQuestions} preguntas. Debes contestar todas para calificar tu examen.`;
+                    warningBox.classList.remove('hidden');
+                }
+                return;
+            }
+
+            let correctCount = 0;
+            for (let q = 1; q <= totalQuestions; q++) {
+                const answer = quizAnswers[q];
+                const resBox = document.getElementById(`q_res_${q}`);
+                
+                answer.btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+
+                if (resBox) resBox.classList.remove('hidden');
+
+                if (answer.isCorrect) {
+                    correctCount++;
+                    answer.btn.classList.add('bg-emerald-500/30', 'border-emerald-400', 'text-emerald-300');
+                    if (resBox) {
+                        resBox.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30';
+                        resBox.innerHTML = '✓ ¡Correcto! ' + answer.feedback;
+                    }
+                } else {
+                    answer.btn.classList.add('bg-rose-500/30', 'border-rose-400', 'text-rose-300');
+                    if (resBox) {
+                        resBox.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/30';
+                        resBox.innerHTML = '✗ Incorrecto. ' + answer.feedback;
+                    }
+                }
+            }
+
+            const scoreBox = document.getElementById('quizScoreBox');
+            if (scoreBox) {
+                const percentage = Math.round((correctCount / totalQuestions) * 100);
+                scoreBox.classList.remove('hidden');
+                scoreBox.className = 'mt-6 p-6 rounded-3xl border text-center ' + 
+                    (percentage >= 70 ? 'bg-emerald-500/10 border-emerald-500/30 text-kdemia-700 dark:text-emerald-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-300');
+                scoreBox.innerHTML = `
+                    <h3 class="text-xl font-extrabold mb-1">Resultado: ${correctCount} / ${totalQuestions} Aciertos (${percentage}%)</h3>
+                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">${percentage >= 70 ? '¡Excelente trabajo! Has acreditado este módulo exitosamente.' : 'Has completado el examen. Revisa las explicaciones para reforzar tu aprendizaje.'}</p>
+                `;
+            }
+
+            document.getElementById('btnSubmitExam').classList.add('hidden');
+
+            const btnNext = document.getElementById('btnCompleteAndNext');
+            const notice = document.getElementById('quizLockedNotice');
+            if (btnNext) btnNext.classList.remove('hidden');
+            if (notice) notice.classList.add('hidden');
+
+            scoreBox.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function toggleTuzyChat() {
+            const chatBox = document.getElementById('tuzyChatBox');
+            const speechBubble = document.getElementById('tuzySpeechBubble');
+            isChatOpen = !isChatOpen;
+            
+            if (isChatOpen) {
+                chatBox.classList.remove('hidden');
+                speechBubble.innerText = isQuiz ? '¡Concéntrate mucho! 🐾' : '¡Aquí estoy lista! 🐾';
+                document.getElementById('tuzyInput').focus();
+            } else {
+                chatBox.classList.add('hidden');
+                speechBubble.innerText = isQuiz ? '¡Tú puedes con el examen! 🐾' : '¡Aquí estoy lista! 🐾';
+            }
+        }
+
+        function setTuzyState(state) {
+            const standingMascot = document.getElementById('tuzyStandingMascot');
+            const statusText = document.getElementById('tuzyStatusText');
+
+            if (state === 'thinking') {
+                standingMascot.src = '/media/chibi/chibi_thinking.png';
+                statusText.innerText = 'Tuzy está pensando... 💭';
+            } else if (state === 'talking') {
+                standingMascot.src = '/media/chibi/chibi_talk.png';
+                statusText.innerText = isQuiz ? '¡Consejo de examen! ✨' : '¡Explicando respuesta! ✨';
+            } else {
+                standingMascot.src = '/media/chibi/chibi_idle.png';
+                statusText.innerText = isQuiz ? '¡Modo examen activo! 🐾' : 'En línea para ayudarte ✨';
+            }
+        }
+
+        function cleanMarkdown(text) {
+            let clean = text;
+            clean = clean.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-kdemia-700 dark:text-kdemia-400 bg-emerald-500/10 px-1 rounded">$1</strong>');
+            clean = clean.replace(/\*(.*?)\*/g, '<em class="text-slate-800 dark:text-slate-200">$1</em>');
+            clean = clean.replace(/(?:^|\n)[*•-]\s+(.+)/g, '<div class="flex items-start space-x-1.5 my-1"><span class="text-emerald-500 font-bold">✓</span><span>$1</span></div>');
+            clean = clean.replace(/\n\n/g, '<div class="h-2"></div>');
+            clean = clean.replace(/\n/g, '<br>');
+            return clean;
+        }
+
+        async function sendToTuzy(event) {
+            event.preventDefault();
+            const input = document.getElementById('tuzyInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const messagesContainer = document.getElementById('tuzyMessages');
+
+            const userBubble = `
+                <div class="flex justify-end">
+                    <div class="bg-kdemia-700 text-white p-3.5 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-xs sm:text-sm leading-relaxed">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            messagesContainer.innerHTML += userBubble;
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            setTuzyState('thinking');
+            document.getElementById('tuzySendBtn').disabled = true;
+
+            const loadingId = 'loading-' + Date.now();
+            const loadingBubble = `
+                <div id="${loadingId}" class="flex items-start space-x-2.5">
+                    <img src="/media/chibi/chibi_thinking.png" class="w-7 h-7 rounded-full object-contain bg-emerald-100 dark:bg-emerald-950 p-0.5 flex-shrink-0 animate-pulse">
+                    <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 dark:border-slate-700 text-slate-400 italic text-xs">
+                        Tuzy está consultando la lección...
+                    </div>
+                </div>
+            `;
+            messagesContainer.innerHTML += loadingBubble;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                const response = await fetch('/api/tuzy/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, lesson_id: lessonId })
+                });
+                const data = await response.json();
+
+                document.getElementById(loadingId).open = false; // dummy
+                document.getElementById(loadingId).remove();
+
+                setTuzyState('talking');
+                const formattedReply = cleanMarkdown(data.reply);
+                const tuzyBubble = `
+                    <div class="flex items-start space-x-2.5">
+                        <img src="/media/chibi/chibi_talk.png" class="w-8 h-8 rounded-full object-contain bg-emerald-950 p-0.5 flex-shrink-0 shadow-sm">
+                        <div class="bg-[#1E293B] border border-slate-700 text-white p-4 rounded-2xl rounded-tl-none shadow-md leading-relaxed text-xs sm:text-sm">
+                            ${formattedReply}
+                        </div>
+                    </div>
+                `;
+                messagesContainer.innerHTML += tuzyBubble;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                setTimeout(() => {
+                    setTuzyState('idle');
+                }, 6000);
+
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                setTuzyState('idle');
+                messagesContainer.innerHTML += `
+                    <div class="p-3 text-center text-xs text-rose-600 bg-rose-500/10 rounded-2xl">
+                        Lo siento, no puedo responderte en este momento ✨. Por favor intenta de nuevo más tarde.
+                    </div>
+                `;
+            } finally {
+                document.getElementById('tuzySendBtn').disabled = false;
+            }
+        }
+
+        function init3DViewer(containerId, stlUrl, modelColor = 0x10b981) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0B0F17);
+
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 0, 100);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
+            dirLight1.position.set(50, 50, 50);
+            scene.add(dirLight1);
+
+            const loader = new THREE.STLLoader();
+            loader.load(stlUrl, function (geometry) {
+                geometry.center();
+                const material = new THREE.MeshStandardMaterial({
+                    color: modelColor,
+                    metalness: 0.2,
+                    roughness: 0.3
+                });
+                const mesh = new THREE.Mesh(geometry, material);
+                scene.add(mesh);
+
+                geometry.computeBoundingSphere();
+                const sphere = geometry.boundingSphere;
+                camera.position.set(0, 0, sphere.radius * 2.5);
+                controls.update();
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
+            }, undefined, function (error) {
+                console.error("Error al cargar STL:", error);
+                container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Modelo 3D en preparación (${stlUrl})</div>`;
+            });
+
+            window.addEventListener('resize', () => {
+                if (!container) return;
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+    </script>
+
+</body>
+</html>

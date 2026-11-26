@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course.title }} - Plan de Formación | Kdemia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        kdemia: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#006837', /* Verde institucional Kdemia */
+                            800: '#065f46',
+                            900: '#064e3b',
+                            darkbg: '#0B0F17',
+                            darkcard: '#111827',
+                            darkborder: '#1F2937'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#F8FAF9] dark:bg-kdemia-darkbg text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300">
+
+    <!-- Navegación Superior -->
+    <header class="bg-white/80 dark:bg-kdemia-darkcard/80 backdrop-blur-md border-b border-gray-200/80 dark:border-kdemia-darkborder sticky top-0 z-40 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'course_list' %}" class="w-10 h-10 rounded-xl bg-kdemia-700 flex items-center justify-center text-white font-black text-lg shadow-md hover:scale-105 transition-transform">
+                    K
+                </a>
+                <a href="{% url 'course_list' %}" class="font-extrabold text-xl text-slate-900 dark:text-white tracking-tight">
+                    K<span class="text-kdemia-500">demia</span>
+                </a>
+            </div>
+
+            <!-- Acciones: Modo Oscuro + Usuario -->
+            <div class="flex items-center space-x-3 sm:space-x-5">
+                
+                <!-- BOTÓN TOGGLE MODO OSCURO -->
+                <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all" title="Alternar tema claro/oscuro">
+                    <svg id="themeIconSun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <svg id="themeIconMoon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                </button>
+
+                {% if user.is_authenticated %}
+                    <span class="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">
+                        Hola, <strong class="text-kdemia-700 dark:text-kdemia-500">{{ user.username }}</strong>
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline">Cerrar Sesión</a>
+                {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-kdemia-700">Iniciar Sesión</a>
+                    <a href="{% url 'register' %}" class="bg-kdemia-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all">Registrarse</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        
+        <!-- Mensajes del Sistema -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-sm font-semibold flex items-center shadow-sm">
+                <span class="text-xl mr-3">⚠️</span>
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mb-6 font-medium">
+            <a href="{% url 'course_list' %}" class="hover:text-kdemia-700 dark:hover:text-kdemia-500 transition-colors">Catálogo</a>
+            <span>/</span>
+            <span class="text-kdemia-700 dark:text-kdemia-500 font-bold truncate max-w-[200px] sm:max-w-none">{{ course.title }}</span>
+            <span>/</span>
+            <span class="text-slate-400">Temario Oficial</span>
+        </nav>
+
+        <!-- BANNER HERO DEL PROGRAMA (DISEÑO CORPORATIVO) -->
+        <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-kdemia-900 text-white p-6 sm:p-10 mb-10 shadow-xl border border-white/10">
+            <!-- Brillo de fondo -->
+            <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-kdemia-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 max-w-3xl">
+                <div class="flex flex-wrap items-center gap-2.5 mb-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-kdemia-500/20 text-kdemia-400 border border-kdemia-500/30">
+                        {{ course.badge_label }}
+                    </span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-slate-200 border border-white/10">
+                        Aliado: {{ course.partner }}
+                    </span>
+                    {% if course.category %}
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-slate-200 border border-white/10">
+                        {{ course.category.name }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-4 leading-tight">
+                    {{ course.title }}
+                </h1>
+                
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                    {{ course.description }}
+                </p>
+
+                <!-- Métricas rápidas -->
+                <div class="flex flex-wrap gap-6 text-xs sm:text-sm text-slate-300 border-t border-white/10 pt-6">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-kdemia-400 text-base">📚</span>
+                        <span><strong>{{ total_lessons }}</strong> lecciones preparadas</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-kdemia-400 text-base">⏱️</span>
+                        <span>Ritmo 100% flexible</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-kdemia-400 text-base">🎓</span>
+                        <span>Certificación oficial incluida</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO Y TEMARIO EN 2 COLUMNAS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            
+            <!-- Columna Izquierda: Temario de Módulos (2 columnas de ancho) -->
+            <div class="lg:col-span-2 space-y-5">
+                
+                <div class="flex items-center justify-between pb-2">
+                    <h2 class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center">
+                        <span class="w-3 h-3 bg-kdemia-600 rounded-full mr-2.5 shadow-sm"></span>
+                        Estructura del Programa
+                    </h2>
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-200/60 dark:bg-slate-800 px-3 py-1 rounded-full">
+                        {{ modules.count }} Módulos
+                    </span>
+                </div>
+
+                <!-- Lista de Módulos Acordeón -->
+                <div class="space-y-4">
+                    {% for module in modules %}
+                    <div class="bg-white dark:bg-kdemia-darkcard border border-gray-200/80 dark:border-kdemia-darkborder rounded-3xl overflow-hidden shadow-sm transition-all hover:border-kdemia-500/40">
+                        
+                        <!-- Barra de Encabezado del Módulo -->
+                        <div class="px-6 py-4.5 bg-slate-50/80 dark:bg-slate-800/50 border-b border-gray-100 dark:border-kdemia-darkborder flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] font-black uppercase tracking-wider text-kdemia-700 dark:text-kdemia-400 block mb-0.5">
+                                    Módulo {{ module.order }}
+                                </span>
+                                <h3 class="font-extrabold text-slate-900 dark:text-white text-base">
+                                    {{ module.title }}
+                                </h3>
+                            </div>
+                            <span class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-slate-700">
+                                {{ module.lessons.count }} temas
+                            </span>
+                        </div>
+
+                        <!-- Lista de Lecciones del Módulo -->
+                        <div class="divide-y divide-gray-100 dark:divide-kdemia-darkborder">
+                            {% for lesson in module.lessons.all %}
+                                {% if lesson.id in unlocked_ids or user.is_staff or user.is_superuser %}
+                                    <!-- LECCIÓN DESBLOQUEADA -->
+                                    <a href="{% url 'lesson_detail' course.slug lesson.id %}" class="px-6 py-4 flex items-center justify-between hover:bg-emerald-500/5 dark:hover:bg-kdemia-500/10 transition-colors group">
+                                        <div class="flex items-center space-x-3.5">
+                                            <!-- Icono según tipo -->
+                                            <div class="w-9 h-9 rounded-xl {% if lesson.id in completed_ids %}bg-emerald-100 dark:bg-emerald-950/80 text-kdemia-700 dark:text-kdemia-400{% else %}bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-kdemia-700 group-hover:text-white dark:group-hover:bg-kdemia-600{% endif %} flex items-center justify-center transition-all shadow-xs">
+                                                {% if lesson.id in completed_ids %}
+                                                <svg class="w-4 h-4 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                {% else %}
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <span class="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-kdemia-700 dark:group-hover:text-kdemia-400 transition-colors block">
+                                                    {{ lesson.title }}
+                                                </span>
+                                                <span class="text-[11px]">
+                                                    {% if lesson.id in completed_ids %}
+                                                    <span class="text-kdemia-600 dark:text-kdemia-400 font-bold">Completada ✓</span>
+                                                    {% else %}
+                                                    <span class="text-emerald-600 dark:text-emerald-400 font-semibold">Disponible para cursar</span>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-xs font-bold text-kdemia-700 dark:text-kdemia-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
+                                                Entrar &rarr;
+                                            </span>
+                                        </div>
+                                    </a>
+                                {% else %}
+                                    <!-- LECCIÓN BLOQUEADA (CON CANDADO) -->
+                                    <div class="px-6 py-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 opacity-60 cursor-not-allowed select-none">
+                                        <div class="flex items-center space-x-3.5">
+                                            <div class="w-9 h-9 rounded-xl bg-slate-200/70 dark:bg-slate-800 text-slate-400 flex items-center justify-center">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <span class="text-sm font-semibold text-slate-500 dark:text-slate-400 block">
+                                                    {{ lesson.title }}
+                                                </span>
+                                                <span class="text-[11px] text-slate-400">
+                                                    🔒 Completa la lección anterior para desbloquear
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-200/70 dark:bg-slate-800 px-2.5 py-1 rounded-md">
+                                            Bloqueada
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha: Tarjeta Ejecutiva de Avance y Certificado -->
+            <div class="space-y-6 lg:sticky lg:top-24">
+                <div class="bg-white dark:bg-kdemia-darkcard rounded-3xl p-6 sm:p-7 border border-gray-200/80 dark:border-kdemia-darkborder shadow-lg">
+                    
+                    <h3 class="font-extrabold text-slate-900 dark:text-white text-base mb-4 flex items-center justify-between">
+                        <span>Ficha del Programa</span>
+                        <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    </h3>
+                    
+                    <div class="space-y-3.5 text-xs sm:text-sm pb-6 border-b border-gray-100 dark:border-slate-800">
+                        <div class="flex justify-between text-slate-600 dark:text-slate-400">
+                            <span>Modalidad:</span>
+                            <span class="font-bold text-slate-900 dark:text-slate-200">Secuencial 100% Online</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600 dark:text-slate-400">
+                            <span>Evaluación:</span>
+                            <span class="font-bold text-slate-900 dark:text-slate-200">Exámenes interactivos</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600 dark:text-slate-400">
+                            <span>Acreditación:</span>
+                            <span class="font-bold text-kdemia-700 dark:text-kdemia-400">Certificado Oficial Kdemia</span>
+                        </div>
+                    </div>
+
+                    <!-- PROGRESO DEL ESTUDIANTE -->
+                    <div class="pt-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-400">Progreso Total</h4>
+                            <span class="text-sm font-black text-kdemia-700 dark:text-kdemia-400">{{ progress_percent }}%</span>
+                        </div>
+
+                        <!-- Barra de porcentaje suave -->
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden mb-3 p-0.5">
+                            <div class="bg-gradient-to-r from-kdemia-600 to-kdemia-500 h-full rounded-full transition-all duration-700 shadow-xs" style="width: {{ progress_percent }}%"></div>
+                        </div>
+
+                        <!-- BOTÓN DE ACCESO AL CERTIFICADO -->
+                        {% if progress_percent == 100 or user.is_staff or user.is_superuser %}
+                            <a href="{% url 'course_certificate' course.slug %}" class="w-full mt-3 flex items-center justify-center space-x-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-kdemia-700 to-emerald-700 hover:from-kdemia-800 hover:to-emerald-800 text-white font-black text-xs sm:text-sm shadow-xl hover:shadow-2xl transition-all hover:scale-105 active:scale-95">
+                                <span>🎓</span>
+                                <span>Descargar Certificado Oficial</span>
+                            </a>
+                        {% elif user.is_authenticated %}
+                            <p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-2">
+                                Completa el 100% del temario para desbloquear tu certificado.
+                            </p>
+                        {% else %}
+                            <a href="{% url 'login' %}?next={{ request.path }}" class="text-xs text-kdemia-700 dark:text-kdemia-400 font-bold hover:underline block text-center mt-2">
+                                Inicia sesión para guardar tu avance &rarr;
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- SCRIPT DEL MODO OSCURO (PERSISTENTE EN NAVEGADOR) -->
+    <script>
+        function applyInitialTheme() {
+            if (localStorage.getItem('kdemia_theme') === 'dark' || (!('kdemia_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        applyInitialTheme();
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('kdemia_theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('kdemia_theme', 'dark');
+            }
+        }
+    </script>
+
+</body>
+</html>
